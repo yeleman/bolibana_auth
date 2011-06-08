@@ -12,7 +12,7 @@ class Role(models.Model):
 
     name = models.CharField(max_length=50)
     slug = models.SlugField(max_length=15, primary_key=True)
-    permissions = models.ManyToManyField('Permission')
+    permissions = models.ManyToManyField('Permission', null=True, blank=True)
 
     def __unicode__(self):
         return self.name
