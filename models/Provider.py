@@ -35,15 +35,24 @@ class Provider(models.Model):
     def name(self):
         """ prefered representation of the provider's name """
         if self.first_name and self.last_name:
-            return u"%(first)s %(last)s" % {'first': self.first_name, \
-                                            'last': self.last_name}
+            return u"%(first)s %(last)s" % {'first': self.first_name.title(), \
+                                            'last': self.last_name.title()}
         if self.first_name:
-            return self.first_name
+            return self.first_name.title()
 
         if self.last_name:
-            return self.last_name
+            return self.last_name.title()
 
         return self.username
+
+    def name_access(self):
+        access = self.default_access()
+        if access:
+            return ugettext(u"%(name)s (%(access)s)") \
+                   % {'name': self.name(), \
+                      'access': access.name()}
+        else:
+            return self.name()
 
     def to_dict(self):
         return {'first_name': self.first_name, 'last_name': self.last_name, \

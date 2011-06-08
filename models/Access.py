@@ -9,6 +9,7 @@ from django.contrib.contenttypes import generic
 
 from django.contrib.auth.models import ContentType
 
+
 class Access(models.Model):
     """ Bundle of a Role for a target object. Usually an Entity.
 
@@ -28,11 +29,11 @@ class Access(models.Model):
     target = generic.GenericForeignKey('content_type', 'object_id')
 
     def __unicode__(self):
-        return self.name
+        return self.name()
 
     def name(self):
         if self.target.level == 0:
-            return self.role
+            return self.role.__unicode__()
         else:
             return ugettext(u"%(role)s on %(target)s") \
                             % {'role': self.role, 'target': self.target}
@@ -52,4 +53,3 @@ class Access(models.Model):
             access = cls(role=role, content_type=ct, object_id=oi)
             access.save()
             return access
-
