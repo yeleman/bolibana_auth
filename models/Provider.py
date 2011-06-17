@@ -5,24 +5,35 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
+from django.utils.translation import ugettext_lazy as _, ugettext
 from bolibana_auth.models import Role
 
 
 class Provider(models.Model):
 
+    """ A User Profile for django.auth
+
+        Django User on `.user`
+        All User methods and prop. proxied for easy access in templates """
+
     class Meta:
         app_label = 'bolibana_auth'
+        verbose_name = _(u"Provider")
+        verbose_name_plural = _(u"Providers")
 
-    user = models.OneToOneField(User, unique=True)
+    user = models.OneToOneField(User, unique=True, verbose_name=_(u"User"))
 
     phone_number = models.CharField(max_length=12, unique=True, \
-                                    null=True, blank=True)
-    access = models.ManyToManyField('Access', null=True, blank=True)
+                                    null=True, blank=True, \
+                                    verbose_name=_(u"Phone Number"))
+    access = models.ManyToManyField('Access', null=True, blank=True, \
+                                    verbose_name=_(u"Access"))
 
     def __unicode__(self):
         return self.name()
 
     def name(self):
+        """ prefered representation of the provider's name """
         if self.first_name and self.last_name:
             return u"%(first)s %(last)s" % {'first': self.first_name, \
                                             'last': self.last_name}
@@ -41,7 +52,9 @@ class Provider(models.Model):
     @classmethod
     def create_provider(self, username, password, \
                         phone_number=None, access=None):
-        user, created = User.objects.get_or_create(username=username, password=password)
+        """ shortcut creation of provider with its associated User """
+        user, created = User.objects.get_or_create(username=username, \
+                                                   password=password)
         user.save()
         provider = user.get_profile()
         provider.phone_number = phone_number
@@ -52,10 +65,20 @@ class Provider(models.Model):
         return provider
 
     def has_permission(perm_slug, entity=None):
+        """ whether or not User has this permission for Enitity """
+        qs = self.access.all()
+        if entity == None:
+            qs = qs.filter(target=entity)
+        for access in qs:
+            if perm_slug in [p.slug for p in access.role.permissions.all()]:
+                return True
         return False
 
     def best_access(self):
-        access_count = [(access, access.target.get_descendant_count()) for access in self.access.all() if not access.target == None]
+        """ Highest access in the hierarchy of Entity targets """
+        access_count = [(access, access.target.get_descendant_count()) \
+                        for access in self.access.all() \
+                        if not access.target == None]
         access_count.sort()
         try:
             return access_count[0]
@@ -63,6 +86,7 @@ class Provider(models.Model):
             return None
 
     def main_role(self):
+        """ only or main role if Provider has many """
         try:
             return self.access[0].role
         except IndexError:
@@ -74,54 +98,63 @@ class Provider(models.Model):
 
     def get_username(self):
         return self.user.username
+
     def set_username(self, value):
         self.user.username = value
     username = property(get_username, set_username)
 
     def get_first_name(self):
         return self.user.first_name
+
     def set_first_name(self, value):
         self.user.first_name = value
     first_name = property(get_first_name, set_first_name)
 
     def get_last_name(self):
         return self.user.last_name
+
     def set_last_name(self, value):
         self.user.last_name = value
     last_name = property(get_last_name, set_last_name)
 
     def get_email(self):
         return self.user.email
+
     def set_email(self, value):
         self.user.email = value
     email = property(get_email, set_email)
 
     def get_is_staff(self):
         return self.user.is_staff
+
     def set_is_staff(self, value):
         self.user.is_staff = value
     is_staff = property(get_is_staff, set_is_staff)
 
     def get_is_active(self):
         return self.user.is_active
+
     def set_is_active(self, value):
         self.user.is_active = value
     is_active = property(get_is_active, set_is_active)
 
     def get_is_superuser(self):
         return self.user.is_superuser
+
     def set_is_superuser(self, value):
         self.user.is_superuser = value
     is_superuser = property(get_is_superuser, set_is_superuser)
 
     def get_last_login(self):
         return self.user.last_login
+
     def set_last_login(self, value):
         self.user.last_login = value
     last_login = property(get_last_login, set_last_login)
 
     def get_date_joined(self):
         return self.user.date_joined
+
     def set_date_joined(self, value):
         self.user.date_joined = value
     date_joined = property(get_date_joined, set_date_joined)
@@ -170,10 +203,10 @@ class Provider(models.Model):
         return self
 
 
-
 def save_associated_user(sender, instance, created, **kwargs):
     if not created:
         instance.user.save()
+
 
 def create_user_provider(sender, instance, created, **kwargs):
     if created:
