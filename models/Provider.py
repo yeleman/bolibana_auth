@@ -47,10 +47,11 @@ class Provider(models.Model):
 
     def to_dict(self):
         return {'first_name': self.first_name, 'last_name': self.last_name, \
-                'username': self.username, 'phone_number': self.phone_number}
+                'username': self.username, 'phone_number': self.phone_number, \
+                'email': self.email}
 
     @classmethod
-    def create_provider(self, username, password, \
+    def create_provider(cls, username, password, \
                         phone_number=None, access=None):
         """ shortcut creation of provider with its associated User """
         user, created = User.objects.get_or_create(username=username, \
@@ -88,7 +89,14 @@ class Provider(models.Model):
     def main_role(self):
         """ only or main role if Provider has many """
         try:
-            return self.access[0].role
+            return self.access.all()[0].role
+        except IndexError:
+            return None
+
+    def default_access(self):
+        """ only or main access if Provider has many """
+        try:
+            return self.access.all()[0]
         except IndexError:
             return None
 
