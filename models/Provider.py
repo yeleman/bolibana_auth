@@ -46,7 +46,7 @@ class Provider(models.Model):
         return self.username
 
     def name_access(self):
-        access = self.default_access()
+        access = self.first_access()
         if access:
             return ugettext(u"%(name)s (%(access)s)") \
                    % {'name': self.name(), \
@@ -84,29 +84,24 @@ class Provider(models.Model):
                 return True
         return False
 
-    def best_access(self):
-        """ Highest access in the hierarchy of Entity targets """
-        access_count = [(access, access.target.get_descendant_count()) \
-                        for access in self.access.all() \
-                        if not access.target == None]
-        access_count.sort()
-        try:
-            return access_count[0]
-        except IndexError:
-            return None
-
-    def main_role(self):
+    def first_role(self):
         """ only or main role if Provider has many """
         try:
-            return self.access.all()[0].role
-        except IndexError:
+            return self.first_access().role
+        except AttributeError:
             return None
 
-    def default_access(self):
+    def first_access(self):
         """ only or main access if Provider has many """
         try:
             return self.access.all()[0]
         except IndexError:
+            return None
+
+    def first_target(self):
+        try:
+            return self.first_access().target
+        except AttributeError:
             return None
 
     # following accessors and methods are proxies to

@@ -21,6 +21,6 @@ class AccessAdmin(admin.ModelAdmin):
 
 
 class ProviderAdmin(admin.ModelAdmin):
-    list_display = ('username', 'first_name', 'last_name', 'default_access', \
+    list_display = ('username', 'first_name', 'last_name', 'first_access', \
                     'phone_number', 'email', 'is_active', 'is_staff')
     search_fields = ['username', 'first_name', 'last_name', 'email']
