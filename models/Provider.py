@@ -9,6 +9,13 @@ from django.utils.translation import ugettext_lazy as _, ugettext
 from bolibana_auth.models import Role
 
 
+class ActiveManager(models.Manager):
+
+    def get_query_set(self):
+        return super(ActiveManager, self).get_query_set() \
+                        .filter(user__is_active=True)
+
+
 class Provider(models.Model):
 
     """ A User Profile for django.auth
@@ -28,6 +35,10 @@ class Provider(models.Model):
                                     verbose_name=_(u"Phone Number"))
     access = models.ManyToManyField('Access', null=True, blank=True, \
                                     verbose_name=_(u"Access"))
+
+    # django manager first
+    objects = models.Manager()
+    active = ActiveManager()
 
     def __unicode__(self):
         return self.name()
