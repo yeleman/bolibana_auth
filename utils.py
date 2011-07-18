@@ -64,11 +64,20 @@ def username_from_name(first_name, last_name):
             # username is available
             return username
 
+    def string_to_slug(s):
+        raw_data = s
+        try:
+            raw_data = unicodedata.normalize('NFKD',
+                                             raw_data.decode('utf-8',
+                                                             'replace'))\
+                                  .encode('ascii', 'ignore')
+        except:
+            pass
+        return re.sub(r'[^a-z0-9-]+', '', raw_data.lower()).strip()
+
     # normalize first and last name to ASCII only
-    first_name = unicodedata.normalize('NFKD', \
-                         unicode(first_name.lower())).encode('ASCII', 'ignore')
-    last_name = unicodedata.normalize('NFKD', \
-                          unicode(last_name.lower())).encode('ASCII', 'ignore')
+    first_name = string_to_slug(first_name.lower())
+    last_name = string_to_slug(last_name.lower())
 
     # iterate over a jdoe format
     return iterate(jdoe(first_name, last_name))
