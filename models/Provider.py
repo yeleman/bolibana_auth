@@ -85,10 +85,10 @@ class Provider(models.Model):
         provider.save()
         return provider
 
-    def has_permission(perm_slug, entity=None):
+    def has_permission(self, perm_slug, entity=None):
         """ whether or not User has this permission for Enitity """
         qs = self.access.all()
-        if entity == None:
+        if entity != None:
             qs = qs.filter(target=entity)
         for access in qs:
             if perm_slug in [p.slug for p in access.role.permissions.all()]:
