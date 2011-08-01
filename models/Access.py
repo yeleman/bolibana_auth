@@ -3,6 +3,7 @@
 # maintainer: rgaudin
 
 from django.db import models
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext_lazy as _, ugettext
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
@@ -32,11 +33,14 @@ class Access(models.Model):
         return self.name()
 
     def name(self):
-        if self.target.level == 0:
-            return self.role.__unicode__()
-        else:
-            return ugettext(u"%(role)s on %(target)s") \
-                            % {'role': self.role, 'target': self.target}
+        try:
+            if self.target.level == 0:
+                return self.role.__unicode__()
+            else:
+                return ugettext(u"%(role)s on %(target)s") \
+                                % {'role': self.role, 'target': self.target}
+        except ObjectDoesNotExist:
+            return u"*Invalid*"
 
     @classmethod
     def target_data(cls, target):
